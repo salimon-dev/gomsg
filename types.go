@@ -19,3 +19,7 @@ type Message struct {
 	Meta       Meta       `json:"meta"`
 	Parameters Parameters `json:"parameters"`
 }
+
+type InteractionSchema struct {
+	Data []Message `json:"data"`
+}
