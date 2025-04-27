@@ -1,4 +1,4 @@
-package messagesgo
+package gomsg
 
 // generic reference type for all key/value pairs can be used as parameters.
 type Parameters struct {
