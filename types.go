@@ -6,6 +6,11 @@ type Parameters struct {
 	StringKey   string `json:"value"`
 }
 
+type ActionResult struct {
+	Status  string `json:"status"`  // status of action, e.g. success or failure
+	Message string `json:"message"` // additional information about result
+}
+
 // meta is the general info about a message when it's not just a plain interaction.
 type Meta struct {
 	ActionId string `json:"action_id" validate:"required"`
@@ -13,11 +18,12 @@ type Meta struct {
 
 // message structurs in each interaction signal
 type Message struct {
-	From       string      `json:"from" validate:"required"`
-	Type       string      `json:"type" validate:"required"`
-	Body       *string     `json:"body,omitempty"`
-	Meta       *Meta       `json:"meta,omitempty"`
-	Parameters *Parameters `json:"parameters,omitempty"`
+	From       string        `json:"from" validate:"required"`
+	Type       string        `json:"type" validate:"required"`
+	Body       *string       `json:"body,omitempty"`
+	Meta       *Meta         `json:"meta,omitempty"`
+	Parameters *Parameters   `json:"parameters,omitempty"`
+	Result     *ActionResult `json:"result,omitempty"`
 }
 
 type InteractionSchema struct {

@@ -135,3 +135,68 @@ func TestActionMessageWithParameters(t *testing.T) {
 		t.Fatalf("Expected no errors to be returned")
 	}
 }
+
+func TestActionResultWithoutResult(t *testing.T) {
+	message := Message{
+		From: "archivist",
+		Type: "actionResult",
+	}
+	errs := validateMessage(&message, 0)
+	if errs == nil {
+		t.Fatalf("Expected an error when parsing empty action result")
+	}
+	if len(*errs) != 2 {
+		t.Fatalf("Expected 2 errors to be returned")
+	}
+	if (*errs)[0].Type != "MetaRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[0].Type)
+	}
+	if (*errs)[1].Type != "ResultRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[1].Type)
+	}
+}
+
+func TestActionResultWithoutActionId(t *testing.T) {
+	message := Message{
+		From: "archivist",
+		Type: "actionResult",
+		Meta: &Meta{},
+	}
+	errs := validateMessage(&message, 0)
+	if errs == nil {
+		t.Fatalf("Expected an error when parsing empty action result")
+	}
+	if len(*errs) != 2 {
+		t.Fatalf("Expected 2 errors to be returned")
+	}
+	if (*errs)[0].Type != "ActionIdRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[0].Type)
+	}
+	if (*errs)[1].Type != "ResultRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[1].Type)
+	}
+}
+
+func TestActionResultWithoutStatus(t *testing.T) {
+	message := Message{
+		From: "archivist",
+		Type: "actionResult",
+		Meta: &Meta{
+			ActionId: "randomid",
+		},
+		Result: &ActionResult{},
+	}
+	errs := validateMessage(&message, 0)
+	if errs == nil {
+		t.Fatalf("Expected an error when parsing empty action result")
+	}
+	if len(*errs) != 2 {
+		t.Fatalf("Expected 2 errors to be returned")
+	}
+	if (*errs)[0].Type != "StatusRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[0].Type)
+	}
+	if (*errs)[1].Type != "MessageRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[1].Type)
+	}
+}
