@@ -1,0 +1,64 @@
+name: Test Coverage and Semantic Tag
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-and-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed to fetch all tags and history
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Run tests with coverage
+        run: |
+          go test ./... -coverprofile=coverage.out
+          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+          echo "coverage=$COVERAGE" >> $GITHUB_ENV
+
+      - name: Determine version bump and tag
+        if: ${{ env.coverage && fromJSON(env.coverage) > 95 }}
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          COMMITS=$(git log $LATEST_TAG..HEAD --pretty=format:"%s%n%b")
+          echo "Commits since last tag:"
+          echo "$COMMITS"
+
+          if echo "$COMMITS" | grep -q "BREAKING CHANGE"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -q "^feat"; then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+          echo "Determined bump: $BUMP"
+
+          VERSION=$(echo $LATEST_TAG | sed 's/^v//' | awk -F. -v bump=$BUMP '
+            {
+              major=$1; minor=$2; patch=$3;
+              if (bump=="major") { major+=1; minor=0; patch=0 }
+              else if (bump=="minor") { minor+=1; patch=0 }
+              else { patch+=1 }
+              printf("v%d.%d.%d\n", major, minor, patch)
+            }')
+
+          echo "New version: $VERSION"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
+      - name: Skip tagging if coverage is too low
+        if: ${{ env.coverage && fromJSON(env.coverage) <= 95 }}
+        run: echo "Coverage below 95%, skipping tag."

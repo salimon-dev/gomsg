@@ -3,7 +3,7 @@ package gomsg
 // generic reference type for all key/value pairs can be used as parameters.
 type Parameters struct {
 	// unique record key to identify an object that needs to be acted upon
-	RecordKey   string  `json:"record_key"`
+	RecordKey   *string `json:"record_key"`
 	StringValue *string `json:"string_value,omitempty"`
 }
 
