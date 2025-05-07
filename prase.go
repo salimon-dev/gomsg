@@ -149,6 +149,13 @@ func validateActionMessage(message *Message, index int) *[]ValidationError {
 			Message: fmt.Sprintf("parameters are required in message %d", index),
 		}
 		errsIndex++
+	} else {
+		actionErrs := ValidateActionParameters(message, index)
+		if actionErrs != nil {
+			copy(errs[errsIndex:], *actionErrs)
+			errsIndex += len(*actionErrs)
+		}
+
 	}
 	cappedErrors := recapErrors(&errs, errsIndex)
 	return cappedErrors

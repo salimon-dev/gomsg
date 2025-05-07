@@ -128,11 +128,22 @@ func TestActionMessageWithoutParameters(t *testing.T) {
 }
 
 func TestActionMessageWithParameters(t *testing.T) {
-	data := []byte(`{"data": [{"from": "user", "type": "setStringValue", "meta": {"action_id": "somerandomid"}, "parameters": {}}]}`)
+	data := []byte(`{"data": [{"from": "user", "type": "setStringValue", "meta": {"action_id": "somerandomid"}, "parameters": {"string_value": "somestrinvalue", "record_key": "somekey"}}]}`)
 
 	_, errs := ParseInteractionSchema(data)
 	if errs != nil {
 		t.Fatalf("Expected no errors to be returned")
+	}
+}
+func TestActionMessageWithWrongParameters(t *testing.T) {
+	data := []byte(`{"data": [{"from": "user", "type": "setStringValue", "meta": {"action_id": "somerandomid"}, "parameters": {"string_value": "somestrinvalue"}}]}`)
+
+	_, errs := ParseInteractionSchema(data)
+	if errs == nil {
+		t.Fatalf("Expected an error when parsing empty schema")
+	}
+	if (*errs)[0].Type != "RecordKeyRequired" {
+		t.Fatalf("Unexpected error type: %s", (*errs)[0].Type)
 	}
 }
 
